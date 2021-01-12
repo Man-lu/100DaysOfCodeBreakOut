@@ -9,5 +9,5 @@ for _ in range(5):
         if x == 500:
             x = -450
             y += 40
-
-
+#
+# print(positions)

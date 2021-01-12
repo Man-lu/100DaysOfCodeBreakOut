@@ -16,15 +16,11 @@ screen.tracer(0)
 paddle = Paddle()
 ball = Ball()
 brick = Brick()
-score = ScoreBoard((300,-250))
-life = ScoreBoard((300,-220))
-game_over = ScoreBoard((0,0))
+score = ScoreBoard()
+life = ScoreBoard()
+game_over = ScoreBoard()
 life.update_lives()
 score.update_score()
-
-for position in positions:
-    brick.create_brick(position)
-
 
 screen.listen()
 screen.onkey(paddle.move_right, "Right")
@@ -32,36 +28,43 @@ screen.onkey(paddle.move_left, "Left")
 
 
 game_on = True
-
+destroyedBricks = []
 while game_on and life.lives > 0:
-    time.sleep(0.1)
     screen.update()
+    time.sleep(0.1)
     ball.move()
-    for b in brick.all_bricks:
-        if b.distance(ball) < 30:
-            b.undo()
-            ball.bounce_top()
-            score.increase_score()
 
-
-
+    #Detect side walls
     if ball.xcor() > 470 or ball.xcor() < -470:
         ball.bounce_sides()
+
+    # Detect Top wall
     if ball.ycor() > 280:
         ball.bounce_top()
 
-    if ball.distance(paddle) < 50 and ball.ycor() < -250:
+    # Detect Paddle
+    if ball.distance(paddle) < 60 and ball.ycor() < -260:
         ball.bounce_top()
 
-    if len(brick.all_bricks) == 0:
-        game_on = False
-
+    # Detect Bottom Wall
     if ball.ball_out_of_bounds():
         life.decrease_lives()
         paddle.goto(0, -280)
 
-if life.lives == 0 or len(brick.all_bricks) == 0:
-    game_over.game_over()
+    # Detect and Destroy Individual Bricks
+    for hit_brick in brick.bricks:
+        if ball.distance(hit_brick) < 30:
+            ball.bounce_top()
+            score.increase_score()
+            hit_brick.penup()
+            hit_brick.goto(600, 0)
+            destroyedBricks.append(hit_brick)
+
+    if len(destroyedBricks) == len(brick.bricks) or life.lives == 0:
+        game_over.game_over()
+        game_on = False
+
+
 
 
 
